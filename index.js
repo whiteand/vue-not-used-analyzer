@@ -230,6 +230,7 @@ async function findNotUsedDataElements(path) {
     console.log(`Amount of data: ${dataAmount}`)
     console.log('Error while or data analyzing:')
     console.log(R.pluck('path', withErrors).join('\n'))
+    console.log()
   } catch (err) {
     console.error(err)
   }
