@@ -1,11 +1,17 @@
 const acorn = require("acorn");
 
 function parse(codeText) {
-  return acorn.parse(codeText, { sourceType: "module", ecmaVersion: 10 });
+  return acorn.parse(codeText, {
+    sourceType: "module",
+    ecmaVersion: 10
+  });
 }
 
 const util = require("util");
-const inspect = x => util.inspect(x, { colors: true, depth: 100 });
+const inspect = x => util.inspect(x, {
+  colors: true,
+  depth: 100
+});
 const insplog = x => console.log(inspect(x));
 const fs = require("fs");
 const p = require("path");
@@ -47,6 +53,7 @@ function isInText(text, action) {
   var regular = new RegExp(`\\b${action}\\b`, "g");
   return text.match(regular);
 }
+
 function removeInnerCurlyBracesContent(text) {
   const innerCurlyBracesReg = /(?<={)(.*)(?<=: ){[^}]+?}(.*)(?=})/gm;
   let newValue = text.replace(innerCurlyBracesReg, "$1{}$2");
@@ -85,7 +92,9 @@ async function hasRepeatings(filepath, mapActionsTextReg) {
       unusedAction
     };
   } catch (err) {
-    console.error({ err });
+    console.error({
+      err
+    });
   }
 }
 
@@ -118,7 +127,7 @@ async function doWork(projectPath, unusedInstanceName, reg) {
     const result = withUnusedActions
       .map(
         elem =>
-          `'${
+        `'${
             elem.filepath
           }' unused ${unusedInstanceName}: ${elem.unusedAction.join(", ")}`
       )
@@ -129,7 +138,9 @@ async function doWork(projectPath, unusedInstanceName, reg) {
     console.log(result);
     console.log(`Amount of ${unusedInstanceName}: ${amountOf}`);
   } catch (err) {
-    console.error({ err });
+    console.error({
+      err
+    });
   }
 }
 
@@ -141,39 +152,41 @@ const forEachSyntaxNode = R.curry((action, tree) => {
     forEachSyntaxNode(action, tree[key]);
   });
 });
+
 function allNodes(tree) {
   let res = [];
   forEachSyntaxNode(n => res.push(n), tree);
   return res;
 }
+
 function findExportDefaultNode(tree) {
   return R.head(
     allNodes(tree).filter(R.propEq("type", "ExportDefaultDeclaration"))
   );
 }
+
 function isNotUsed(name, text) {
   const reg = new RegExp("\\b" + name + "\\b", "gm");
   return text.replace(/\s+/g, " ").search(reg) < 0;
 }
+
 function findNotUsed(fileContent) {
-  const scriptStart = fileContent
-    .replace(/\s+/g, " ")
-    .search(/(?<=<script>).*?<\/script>/gm);
-  const scriptEnd = fileContent
-    .replace(/\s+/g, " ")
-    .search(/.(?=<\/script>)/gm);
+  const transformedFileContent = fileContent
+  const scriptStart = transformedFileContent
+    .search(/(?<=<script>)./gms);
+  const scriptEnd = transformedFileContent
+    .search(/.(?=<\/script>)/gms);
 
   if (scriptStart < 0) throw "cannot find beginning of script";
   if (scriptEnd < scriptEnd) throw "cannot find beginning of script";
 
-  const scriptText = fileContent.slice(scriptStart, scriptEnd);
+  const scriptText = transformedFileContent.slice(scriptStart, scriptEnd);
   try {
     const tree = parse(scriptText);
 
     const exportDefaultNode = findExportDefaultNode(tree);
     const properties = R.pathOr(
-      [],
-      ["declaration", "properties"],
+      [], ["declaration", "properties"],
       exportDefaultNode
     );
     if (!properties.length) return [];
@@ -210,31 +223,34 @@ function findNotUsed(fileContent) {
       return res;
     }
     const textWithoutReturn =
-      fileContent.slice(0, scriptStart) +
+      transformedFileContent.slice(0, scriptStart) +
       scriptText.slice(0, returnStatements.start) +
       scriptText.slice(returnStatements.end) +
-      fileContent.slice(scriptEnd);
+      transformedFileContent.slice(scriptEnd);
     const notUsed = propertiesNames.filter(propName =>
       isNotUsed(propName, textWithoutReturn)
     );
     const notUsedText = notUsed.map(name => `${name} data item is not used`);
     return [...res, ...notUsedText];
   } catch (err) {
-    throw err;
+    const newErr = new Error(err.message)
+    newErr.innerError = err
+    newErr.scriptText = scriptText
+    throw newErr
   }
   return tree;
 }
 
-async function analyzeDataElements(cont, path) {
+async function analyzeDataElements(cont, filePath) {
   try {
     const notUsedArr = findNotUsed(cont);
     return {
-      path,
+      path: filePath,
       notUsed: notUsedArr
     };
   } catch (err) {
     return {
-      path,
+      path: filePath,
       err
     };
   }
@@ -251,27 +267,40 @@ async function findNotUsedDataElements(path) {
     );
     const [withErrors, withoutErrors] = analyzedFiles.reduce(
       (arrs, elem) => {
-        if (R.has("err", elem)) {
+        if (R.prop("err", elem)) {
           arrs[0].push(elem);
         } else {
           arrs[1].push(elem);
         }
         return arrs;
-      },
-      [[], []]
+      }, [
+        [],
+        []
+      ]
     );
     const dataAmount = R.sum(withoutErrors.map(R.path(["notUsed", "length"])));
 
     const allNotUsedText = withoutErrors
       .filter(o => o.notUsed.length > 0)
-      .map(({ path, notUsed }) => {
+      .map(({
+        path,
+        notUsed
+      }) => {
         return `'${path}' data problems: ${notUsed.join(", ")}`;
       })
       .join("\n");
     console.log(allNotUsedText);
     console.log(`Amount of data: ${dataAmount}`);
     console.log("Error while or data analyzing:");
-    console.log(R.pluck("path", withErrors).join("\n"));
+    console.log(R.map(({
+      path,
+      err
+    }) => {
+      const pos = R.pathOr(-1, ['innerError', 'pos'], err)
+      return pos > 0 ?
+        `${path}: ${err.message} : "${err.scriptText.slice(pos, pos + 20)}"` :
+        `${path}: ${err.message}`
+    }, withErrors).join("\n"));
     console.log();
   } catch (err) {
     console.error(err);
