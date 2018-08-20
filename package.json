@@ -1,20 +1,50 @@
 {
-  "name": "vue-not-used-analyzer",
-  "version": "1.0.1",
-  "description": "Finds not used actions getters and setters",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "_from": "vue-not-used-analyzer",
+  "_id": "vue-not-used-analyzer@1.0.6",
+  "_inBundle": false,
+  "_integrity": "sha512-QgEpGXQA7EfLkg7EaJCMkJOGrAgg0gn8iAAeT5hYGz302n5M+mGfiGYMEdbZNfNwFft2TieSSt+YCioLy9v2MQ==",
+  "_location": "/vue-not-used-analyzer",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "vue-not-used-analyzer",
+    "name": "vue-not-used-analyzer",
+    "escapedName": "vue-not-used-analyzer",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
-  "keywords": [
-    "project",
-    "metrics"
+  "_requiredBy": [
+    "#USER"
   ],
-  "author": "Andrew Beletskiy",
-  "license": "ISC",
+  "_resolved": "https://registry.npmjs.org/vue-not-used-analyzer/-/vue-not-used-analyzer-1.0.6.tgz",
+  "_shasum": "4488fe33409bcb7b7bd79df368fcd4d05f7cdc4f",
+  "_spec": "vue-not-used-analyzer",
+  "_where": "C:\\Users\\andrew.beletskiy\\Documents\\GitHub\\ShoutOutTests",
+  "author": {
+    "name": "Andrew Beletskiy"
+  },
+  "bin": {
+    "get-not-used": "get-not-used.bat"
+  },
+  "bundleDependencies": false,
   "dependencies": {
     "acorn": "^5.7.1",
     "ramda": "^0.25.0",
     "recursive-readdir": "^2.2.2"
-  }
+  },
+  "deprecated": false,
+  "description": "Finds not used actions getters and setters",
+  "keywords": [
+    "project",
+    "metrics"
+  ],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "vue-not-used-analyzer",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.7"
 }
