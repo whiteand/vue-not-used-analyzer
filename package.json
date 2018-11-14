@@ -30,7 +30,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "acorn": "^5.7.1",
+    "acorn": "^6.0.4",
     "ramda": "^0.25.0",
     "recursive-readdir": "^2.2.2"
   },
